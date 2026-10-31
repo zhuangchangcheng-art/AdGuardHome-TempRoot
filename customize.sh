@@ -31,5 +31,12 @@ unzip -o "$ZIPFILE" "bin/*" -d "$AGH_DIR" 2>/dev/null
 chmod +x "$BIN_DIR/AdGuardHome" 2>/dev/null
 chmod +x "$SCRIPT_DIR"/*.sh 2>/dev/null
 echo "temproot-remake-20261031" > "$AGH_DIR/temproot-remake.marker"
+# Best-effort auto-start: normally service.sh only runs at boot, and a hard
+# reboot would lose temporary root, so try to start now. If the installer
+# kills background children, use the manager Action button instead.
+if [ -f "$MODPATH/service.sh" ] && [ -f "$BIN_DIR/AdGuardHome" ]; then
+  sh "$MODPATH/service.sh" >/dev/null 2>&1 || true
+  ui_print "- auto-start attempted; if AGH is not running, tap the module Action button"
+fi
 ui_print "- Done. Do NOT run the original AdGuardHome module at the same time."
 ui_print "- Temporary root: after re-obtaining root, run activate.sh (see README) instead of a hard reboot."

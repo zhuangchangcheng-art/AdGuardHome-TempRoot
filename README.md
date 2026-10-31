@@ -55,9 +55,11 @@ that made the original unusable for this combination.
    AdGuardHome module first - do not run both, they share /data/adb/agh.
 2. Flash the local zip (not this repo alone) in your root manager.
 3. **Do not hard-reboot.** A hard reboot loses temporary root.
-4. After re-obtaining temporary root, in a root terminal run:
+4. Start it without a terminal: the installer tries to start it at install
+   time; if it is not running, tap the module's **Action** button in your
+   root manager (action.sh runs service.sh, then opens the Web UI).
+   MT / terminal fallback, only if Action does not work:
    `su -c sh /data/adb/modules/AdGuardHomeTempRoot/activate.sh`
-   (activate.sh just runs the module's service.sh.)
 5. Check in order: a normal game / long connection first, then Muse,
    then Clash with system proxy still on, then filtering.
    Logs: `/data/adb/agh/agh.log` and `/data/adb/agh/clash-app-bridge.log`.
