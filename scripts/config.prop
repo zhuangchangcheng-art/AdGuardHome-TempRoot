@@ -1,0 +1,7 @@
+# AdGuardHome DNS redirect port - stable, do not randomise.
+# This value must match dns.port in bin/AdGuardHome.yaml.
+redir_port=59156
+
+# Proxy subscription URL, only used by ProxyConfig for proxy MODULE configs.
+# Leave blank if you do not use a proxy module.
+PROXY_URL=""

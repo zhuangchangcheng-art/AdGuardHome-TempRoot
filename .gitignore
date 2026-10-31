@@ -1,0 +1,4 @@
+bin/AdGuardHome
+bin/data/
+*.log
+backup/
