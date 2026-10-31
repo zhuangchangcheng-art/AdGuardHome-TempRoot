@@ -1,7 +1,7 @@
 id=AdGuardHomeTempRoot
 name=AdGuard Home TempRoot Remake
-version=20261031
-versionCode=2026103100
+version=20261031-v2.1
+versionCode=2026103102
 author=Remake based on liuzq2002, twoone-3, Ceromis and 410154425 ideas (see README)
-description=AdGuard Home for temporary-root phones: no airplane toggle, no SNI queue, ECS off, AAAA off, Clash App bridge, soft-reboot reload, manual activate without hard reboot. DNS filtering only; see README for what is NOT included.
+description=AdGuard Home for temporary-root phones v2: KSU Hot Install, fail-open 120s listening check, fixed port, no airplane toggle, no SNI queue, ECS off, AAAA off, correct Clash App DNS bridge (bootstraps untouched), soft-reboot reload. DNS filtering only; see README.
 updateJson=

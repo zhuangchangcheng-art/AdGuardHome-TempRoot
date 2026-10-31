@@ -6,6 +6,12 @@
 # airplane mode. It only backs up the previous yaml/config once and
 # installs the new scripts + yaml + filters URLs into /data/adb/agh.
 SKIPUNZIP=1
+# KSU Hot Install: let the installer run hotinstall.sh after replacing
+# the module dir, instead of backgrounding service.sh here (installer
+# may kill background children). Magisk / non-Hot-Install installers
+# ignore these exports and fall back to Action.
+export MODULE_HOT_INSTALL_REQUEST=true
+export MODULE_HOT_RUN_SCRIPT=hotinstall.sh
 ui_print "- TempRoot Remake: installing (no reboot required for activate.sh)"
 AGH_DIR="/data/adb/agh"
 BIN_DIR="$AGH_DIR/bin"
@@ -19,7 +25,7 @@ fi
 if [ -f "$SCRIPT_DIR/config.prop" ]; then
   cp -f "$SCRIPT_DIR/config.prop" "$BACKUP_DIR/config.prop.bak" 2>/dev/null
 fi
-for file in uninstall.sh module.prop service.sh action.sh activate.sh; do
+for file in uninstall.sh module.prop service.sh action.sh activate.sh hotinstall.sh; do
   unzip -o "$ZIPFILE" "$file" -d "$MODPATH" 2>/dev/null
 done
 unzip -o "$ZIPFILE" "scripts/*" -d "$AGH_DIR" 2>/dev/null
@@ -31,12 +37,8 @@ unzip -o "$ZIPFILE" "bin/*" -d "$AGH_DIR" 2>/dev/null
 chmod +x "$BIN_DIR/AdGuardHome" 2>/dev/null
 chmod +x "$SCRIPT_DIR"/*.sh 2>/dev/null
 echo "temproot-remake-20261031" > "$AGH_DIR/temproot-remake.marker"
-# Best-effort auto-start: normally service.sh only runs at boot, and a hard
-# reboot would lose temporary root, so try to start now. If the installer
-# kills background children, use the manager Action button instead.
-if [ -f "$MODPATH/service.sh" ] && [ -f "$BIN_DIR/AdGuardHome" ]; then
-  sh "$MODPATH/service.sh" >/dev/null 2>&1 || true
-  ui_print "- auto-start attempted; if AGH is not running, tap the module Action button"
-fi
+# Hot Install handles auto-start on KSU. On other managers,
+# or if Hot Install is unsupported, tap the module Action button.
+# Do NOT background service.sh here: the installer may kill it.
 ui_print "- Done. Do NOT run the original AdGuardHome module at the same time."
-ui_print "- Temporary root: after re-obtaining root, run activate.sh (see README) instead of a hard reboot."
+ui_print "- Start: installer tried auto-start; if AGH is not running, tap the module Action button in your root manager (MT/activate.sh only as fallback)."

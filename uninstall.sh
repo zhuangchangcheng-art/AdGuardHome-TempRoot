@@ -3,18 +3,22 @@
 # clear iptables, remove data dir ONLY if it carries our marker.
 # This avoids deleting the original module's data if both were installed.
 AGH_DIR="/data/adb/agh"
-while true; do
-  found=0
+# Graceful first, force after 2s (linjoin order). Do NOT kill by
+# substring match: only cmdline prefix AdGuardHome, plus scripts
+# daemons by exact script path, to avoid killing the uninstaller itself.
+kill_aghs() {
   for p in /proc/[0-9]*; do
     IFS= read -r cmd < "$p/cmdline" 2>/dev/null
     case "$cmd" in
-      "$AGH_DIR/bin/AdGuardHome"*|*"$AGH_DIR/scripts/"*)
-        kill -9 "${p#/proc/}" 2>/dev/null; found=1;;
+      "$AGH_DIR/bin/AdGuardHome"*) kill "$1" "${p#/proc/}" 2>/dev/null;;
+      *"$AGH_DIR/scripts/iptables.sh"*|*"$AGH_DIR/scripts/ProxyConfig.sh"*|*"$AGH_DIR/scripts/ClashAppBridge.sh"*) kill "$1" "${p#/proc/}" 2>/dev/null;;
     esac
   done
-  [ "$found" -eq 0 ] && break
-  sleep 1
-done
+}
+kill_aghs ""
+sleep 2
+kill_aghs "-9"
+sleep 1
 [ -f "$AGH_DIR/scripts/ClashAppBridge.sh" ] && "$AGH_DIR/scripts/ClashAppBridge.sh" --clean 2>/dev/null
 [ -f "$AGH_DIR/scripts/ProxyConfig.sh" ] && "$AGH_DIR/scripts/ProxyConfig.sh" --clean 2>/dev/null
 iptables -w 2 -t nat -D OUTPUT -j ADGUARD 2>/dev/null

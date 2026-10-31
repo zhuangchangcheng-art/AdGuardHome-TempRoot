@@ -25,7 +25,14 @@ agh_running() {
   for p in /proc/[0-9]*; do
     [ -f "$p/cmdline" ] || continue
     c=""; IFS= read -r c < "$p/cmdline" 2>/dev/null
-    case "$c" in "$BIN_DIR/AdGuardHome"*) return 0;; esac
+    case "$c" in "$BIN_DIR/AdGuardHome"*) ;;
+      *) continue;;
+    esac
+    if [ -f "$p/comm" ]; then
+      comm=$(cat "$p/comm" 2>/dev/null)
+      [ "$comm" = "AdGuardHome" ] || continue
+    fi
+    return 0
   done
   return 1
 }
@@ -59,11 +66,21 @@ fi
 
 export SSL_CERT_DIR="/system/etc/security/cacerts/"
 "$BIN_DIR/AdGuardHome" --no-check-update &
-sleep 2
-
-# Fail-open (twoone-3 idea): if AGH is not listening, do NOT apply the
-# iptables redirect. A DNS blackout is worse than unfiltered DNS.
-if agh_running; then
+# Fail-open v2 (twoone-3 idea, extended): wait for the DNS port to
+# actually listen, up to 120s (AGH_WAIT_TIMEOUT overrides for tests).
+# Process alive alone is not enough - a dead filter load or a port
+# conflict leaves a process but no listener, and redirecting to it
+# is a DNS blackout. Listening check uses /proc/net/tcp hex port.
+WAIT="${AGH_WAIT_TIMEOUT:-120}"
+HEXPORT=$(printf "%04X" "$PORT")
+LISTENING=0
+i=0
+while [ "$i" -lt "$WAIT" ]; do
+  agh_running || break
+  if grep -q ":$HEXPORT" /proc/net/tcp 2>/dev/null; then LISTENING=1; break; fi
+  sleep 1; i=$((i+1))
+done
+if [ "$LISTENING" -eq 1 ]; then
   echo "$(date '+%F %T') TempRoot: AGH started on port $PORT" >> "$MAIN_LOG"
   "$SCRIPT_DIR/iptables.sh" &
   "$SCRIPT_DIR/ProxyConfig.sh" &

@@ -17,7 +17,7 @@ that made the original unusable for this combination.
 | Port randomised on every cold start, breaking the manager app and the Clash bridge | **Stable port** 59156, unified in yaml + config.prop, never re-rolled |
 | Soft reboot: if AGH was already running, service.sh skipped initialisation, so a patched config never took effect | service.sh **stops the old AGH and restarts it** with the current yaml |
 | If AGH failed to start, the 53 redirect still pointed at a dead port = whole-phone DNS blackout | **Fail-open** (twoone-3 idea): redirect is only applied while AGH is alive |
-| Clash App (not a module) was never bridged, so its DNS bypassed AGH | ClashAppBridge.sh: backs up once, rewrites nameserver/proxy-server-nameserver to AGH, `--clean` restores, never restarts Clash, never touches the subscription URL |
+| Clash App (not a module) was never bridged, so its DNS bypassed AGH | ClashAppBridge.sh v2.1: backs up once, rewrites business DNS (nameserver/fallback/direct-nameserver/nameserver-policy) to AGH, **never** default-nameserver or proxy-server-nameserver (bootstraps), `--clean` restores, never restarts Clash, never touches the subscription URL. CMFA real paths (2026-10-31 phone check): `files/imported/*/config.yaml` and `files/processing/config.yaml` — the old `files/profiles/*.yaml` path does not exist on this phone. Inline-list form (`nameserver: [..]`) is also handled. |
 | ProxyConfig used bash arrays + herestring, failing under dash | Rewritten in **POSIX sh**, `sh -n` and `bash -n` both pass for every script |
 | NoAdsService loop deleted app ad directories every 5 s, forced private DNS off, locked /data/system/ifw | **Not started by service.sh.** The trimmed file is kept only as an optional extra; the two persistent side effects are removed from it |
 | customize.sh did hosts-module checks, chattr locking, old-dir deletion | Minimal installer: back up old yaml/config once, install scripts, nothing destructive |
@@ -48,6 +48,12 @@ that made the original unusable for this combination.
   bridge logic, service reload and fail-open. They do **not** prove
   iptables on a real phone, KSU soft-reboot reload, or the real Clash App
   config path. Those are listed as untested and need the phone log.
+
+## v2.1 phone verification (2026-10-31)
+
+- Bridge v2.1 manually replaced on the phone, `--once` run, Clash core restarted: pure-China ad test back to **14/18 with Clash on** (Baidu/Tencent 6 domains re-blocked), same as the best Clash-off score. Muse works with Clash on.
+- Remaining reachable 4 in that test are the previously known ones (log.snssdk.com intentionally allowed, click.alibaba.com / getui.com / jpush.cn rule-missing), not new leaks.
+- The v2.1 flashable zip (with binary) is built locally from this repo + binary; this repo alone does not contain the binary.
 
 ## Install (temporary root)
 
