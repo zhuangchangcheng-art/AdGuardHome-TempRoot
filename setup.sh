@@ -13,7 +13,7 @@ set -euo pipefail
 [ "$(id -u)" = 0 ] || { echo "请用 root 运行: sudo -i 后再执行"; exit 1; }
 
 export DEBIAN_FRONTEND=noninteractive
-MIRROR="https://gh.llkk.cc/https://github.com"
+MIRROR="https://ascs-dl-proxy.cfedge-zzc.workers.dev"
 D=/etc/proxy
 
 echo "==> [1/8] 安装系统依赖"
